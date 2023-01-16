@@ -1,0 +1,228 @@
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Objects;
+
+public class Midterm {
+
+    private String student_file;
+
+  public Midterm(String student_file){
+      this.student_file = student_file;
+  }
+
+    public void display() throws IOException {
+        FileReader fr = new FileReader(student_file);
+        BufferedReader br = new BufferedReader(fr);
+        String student;
+        while ((student = br.readLine()) != null) {
+
+            String[] arr = student.split(",");
+            System.out.println("id " + arr[0] + "\tname " + arr[1] + " cgpa " + arr[2] + "\tdob " + arr[3] + "\tGender " + arr[4]);
+        }
+        fr.close();
+        br.close();
+    }
+
+    public void findbyId(String id) throws IOException {
+        FileReader fr = new FileReader(student_file);
+        BufferedReader br = new BufferedReader(fr);
+        String student;
+        while ((student = br.readLine()) != null) {
+
+            String[] arr = student.split(",");
+            if(arr[0].equals(id)){
+                System.out.println(student);
+            }
+        }
+    }
+    public void state() throws IOException{
+
+        FileReader fr = new FileReader(student_file);
+        BufferedReader br = new BufferedReader(fr);
+
+        int males = 0;
+        int females = 0;
+
+        double mcgpa = 0.0;
+        double fcgpa = 0.0;
+        String student;
+
+        while((student = br.readLine())!=null)
+        {
+            String[] arr = student.split(",");
+
+            if (arr[4].equals("M"))
+                mcgpa += Double.parseDouble(arr[2]);
+                males++;
+
+            if (arr[4].equals("F"))
+                fcgpa+= Double.parseDouble(arr[2]);
+                females++;
+        }
+        fr.close();
+        br.close();
+        System.out.println("Males are " + males + "Avg cgpa is " + mcgpa/males);
+        System.out.println("Females are " + females + "avg cgpa" + fcgpa/females);
+
+        FileWriter fw = new FileWriter("stats.txt");
+
+        fw.write("Males are " + males + "Avg cgpa is " + mcgpa/males);
+        fw.write("Females are " + females + "avg cgpa" + fcgpa/females);
+
+        fw.close();
+    }
+    public void modify()throws IOException {
+        File f = new File(student_file);
+        RandomAccessFile rf = new RandomAccessFile(f,"rw");
+
+        boolean found = false ;
+        byte [] id = new byte[4];
+        byte [] rec = new byte[55];
+
+        String id_str = null ;
+        String rec_str = null ;
+
+        while (rf.getFilePointer()<= rf.length() -2){
+            rf.read(id,0,4);
+            id_str = new String(id);
+            if (id_str.equals("9821"))
+            {
+                rf.seek(rf.getFilePointer()+32);
+                rf.write("3.00".getBytes(StandardCharsets.UTF_8));
+                rf.seek(rf.getFilePointer()-40);
+                rf.read(rec,0,53);
+                rec_str = new String(rec);
+                found = true ;
+            }
+            if (found)
+                break;
+
+            rf.seek(rf.getFilePointer()+51);
+        }
+        rf.close();
+        System.out.println(rec_str);
+        }
+
+        public void delete(String id)throws IOException {
+
+        FileReader fr = new FileReader(student_file);
+        BufferedReader br = new BufferedReader(fr);
+
+        String student ;
+        ArrayList<String> new_list = new ArrayList<>();
+
+
+        boolean found = false;
+
+            while ((student = br.readLine()) != null) {
+
+                String[] arr = student.split(",");
+
+                if (!Objects.equals(arr[0],id)){
+                    new_list.add(student);
+                }
+
+                if (arr[0].equals(id))
+                {
+                    found = true;
+                }
+            }
+            fr.close();
+            br.close();
+
+            if (found)
+            {
+                FileWriter fw = new FileWriter(student_file);
+                for (String s : new_list)
+                {
+                    fw.write(s + "\n");
+                }
+                fw.close();
+            } else {
+                System.out.println("Not found");
+            }
+        }
+    public void deleteByRandomAccess(long id) throws IOException {
+            File file = new File(student_file);
+            RandomAccessFile rf = new RandomAccessFile(file, "rw");
+
+            boolean found = false;
+
+            byte[] std_id = new byte[4];
+            byte[] record = new byte[54];
+
+            String id_Str = null;
+            String record_str = null;
+
+            ArrayList<String> newList = new ArrayList<>();
+
+            while (rf.getFilePointer() <= rf.length() - 2) {
+                rf.read(std_id, 0, 4);
+                id_Str = new String(std_id);
+
+                if (!id_Str.equals(String.valueOf(id))) {
+
+                    rf.seek(rf.getFilePointer() - 4);
+                    rf.readLine();
+                    rf.seek(rf.getFilePointer() - 54);
+                    rf.read(record, 0, 54);
+                    record_str = new String(record);
+                    newList.add(record_str);
+
+                }
+
+                rf.seek(rf.getFilePointer() + 50);
+            }
+            rf.close();
+
+            RandomAccessFile rf2 = new RandomAccessFile(file, "rw");
+            for (String s : newList) {
+                rf2.write(s.getBytes(StandardCharsets.UTF_8));
+
+            }
+            rf2.close();
+    }
+
+        public void append(int id , String name , String cgpa , String dob , String gender)throws IOException{
+            FileWriter fr = new FileWriter(student_file , true);
+
+            fr.write(id +","+String.format("%-30s",name) + cgpa + "," + dob + "," + gender+"\n");
+            fr.close();
+        }
+    public void writingWithBufferWriter() {
+        File file = new File("test.txt");
+
+        try {
+            FileWriter fw = new FileWriter(file);
+            BufferedWriter bw = new BufferedWriter(fw);
+
+            bw.write("20170001,20170002,20170003,20170004,20170005,20170006,20170007,20170008,20170009,20170010");
+            bw.newLine();
+            bw.write("mt,mt,mt,mt,mt,mt,mt,mt,mt,mt");
+            bw.newLine();
+            bw.write("qz,qz,qz,qz,qz,qz,qz,qz,qz,qz");
+            bw.newLine();
+            bw.write("asg,asg,asg,asg,asg,asg,asg,asg,asg,asg");
+            bw.newLine();
+            bw.write("fin,fin,fin,fin,fin,fin,fin,fin,fin,fin");
+            bw.newLine();
+            bw.write("0,0,0,0,0,0,0,0,0,0");
+            bw.newLine();
+            bw.write("0,0,0,0,0,0,0,0,0,0");
+            bw.newLine();
+            bw.write("0,0,0,0,0,0,0,0,0,0");
+            bw.newLine();
+            bw.write("0,0,0,0,0,0,0,0,0,0");
+            bw.newLine();
+
+            bw.close();
+            fw.close();
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
+
+    }
+    }
